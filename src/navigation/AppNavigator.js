@@ -1,55 +1,67 @@
-import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Platform } from 'react-native'; // Import Platform to fix layout on iPhone vs Android
+import { createStackNavigator } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 
-// 1. IMPORT YOUR NEW SCREENS HERE
+// Screens
+import LoginScreen from '../screens/LoginScreen';
+import SignupScreen from '../screens/SignUpScreen';
+import DashboardScreen from '../screens/DashboardScreen';
 import CirclesScreen from '../screens/CirclesScreen';
 import CoachScreen from '../screens/CoachScreen';
-import DashboardScreen from '../screens/DashboardScreen';
+import CreateCircleScreen from '../screens/CreateCircleScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-export default function AppNavigator() {
+// 1. We accept { route } here so we can grab the user data passed from Login
+function MainTabNavigator({ route }) {
+  
+  // Get the user params (or empty object if undefined) to pass to tabs
+  const { user } = route.params || {};
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false, // We hide the default top bar because we made our own custom headers
+        headerShown: false,
         tabBarStyle: { 
             backgroundColor: '#fff', 
             borderTopWidth: 0, 
-            elevation: 10, // Shadow for Android
-            height: Platform.OS === 'ios' ? 85 : 60, // Taller on iPhone to avoid the home bar
+            elevation: 10, 
+            height: Platform.OS === 'ios' ? 85 : 60,
             paddingBottom: Platform.OS === 'ios' ? 30 : 10,
             paddingTop: 10
         },
-        tabBarActiveTintColor: '#4f46e5', // Indigo color when selected
-        tabBarInactiveTintColor: '#9CA3AF', // Gray color when not selected
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '500' },
-        
-        // This function decides which icon to show
+        tabBarActiveTintColor: '#4f46e5',
+        tabBarInactiveTintColor: '#9CA3AF',
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Circles') {
-            iconName = focused ? 'people' : 'people-outline';
-          } else if (route.name === 'Coach') {
-            iconName = focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
-          }
-
+          if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
+          else if (route.name === 'Circles') iconName = focused ? 'people' : 'people-outline';
+          else if (route.name === 'Coach') iconName = focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
+          else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
       })}
     >
-      {/* 2. LINK THE BUTTONS TO THE SCREENS HERE */}
-      <Tab.Screen name="Home" component={DashboardScreen} />
-      <Tab.Screen name="Circles" component={CirclesScreen} />
-      <Tab.Screen name="Coach" component={CoachScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      {/* We pass initialParams so these screens know who the user is */}
+      <Tab.Screen name="Home" component={DashboardScreen} initialParams={{ user }} />
+      <Tab.Screen name="Circles" component={CirclesScreen} initialParams={{ user }} />
+      <Tab.Screen name="Coach" component={CoachScreen} initialParams={{ user }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} initialParams={{ user }} />
     </Tab.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Signup" component={SignupScreen} />
+      <Stack.Screen name="Main" component={MainTabNavigator} />
+      <Stack.Screen name="CreateCircle" component={CreateCircleScreen} />
+    </Stack.Navigator>
   );
 }
